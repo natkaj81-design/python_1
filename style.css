@@ -103,3 +103,19 @@
 @media(max-width:1050px){.ce-side-layout,.ce-triple{grid-template-columns:1fr}.ce-fairy-doors{max-width:550px;width:100%;margin:auto}.ce-safe{max-width:420px;width:100%;margin:auto}}@media(max-width:730px){.ce-task-grid{grid-template-columns:1fr}.ce-task-card{padding:11px}.ce-arch{min-height:125px}.ce-wood{height:110px}}
 /* Existing conditional exercise action buttons follow the same comic palette. */
 #conditional-practice-root .cp-detective-card button,#conditional-practice-root .cp-sort-bank button,#conditional-practice-root .cp-sort-zone button,#conditional-practice-root .cp-predict button,#conditional-practice-root .cp-extra-footer button{border:3px solid #10112b;border-radius:13px;background:#ffe04c;color:#10112b;font-weight:900;box-shadow:3px 3px #10112b;cursor:pointer}
+
+/* Refined comic controls and safe maze spacing */
+#conditional-practice-root .cp-maze-actions{display:flex;justify-content:flex-end;clear:both;margin:22px 0 6px;padding:8px 4px 6px;position:relative;z-index:1}
+#conditional-practice-root .cp-maze-actions button{position:static!important;display:inline-flex;align-items:center;justify-content:center;max-width:100%;margin:0!important;background:linear-gradient(135deg,#ffe500,#ffac28)!important;color:#10112b!important;border:3px solid #10112b!important;border-radius:14px!important;box-shadow:4px 4px 0 #10112b!important;padding:11px 20px!important;font-weight:950!important;cursor:pointer}
+#conditional-practice-root .cp-maze .cp-maze-layout{margin-bottom:12px}
+#conditional-practice-root .cp-maze .cp-maze-left{min-width:0}
+#conditional-practice-root .cp-detective button.action-check,#conditional-practice-root .cp-detective #cp-det-all,#conditional-practice-root .cp-detective #cp-det-reset,#conditional-practice-root .cp-sort-bank button,#conditional-practice-root .cp-sort-zone button,#conditional-practice-root .cp-extra button.ce-action{background:linear-gradient(135deg,#ffe95a,#ffad36)!important;color:#10112b!important;border:3px solid #10112b!important;border-radius:14px!important;box-shadow:3px 4px 0 #10112b!important;font-weight:950!important;padding:10px 16px!important;cursor:pointer}
+#conditional-practice-root .ce-level{display:none!important}
+#conditional-practice-root .ce-safe input{width:140px;max-width:100%;font-family:monospace}
+@media(max-width:760px){#conditional-practice-root .cp-maze-actions{justify-content:center}}
+
+/* Розділ 13: рознесені кнопки сортування */
+.cp-sort-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:18px}
+.cp-sort-actions .action-check{border:3px solid #17294a!important;border-radius:15px!important;background:linear-gradient(135deg,#ffec62,#ffbc00)!important;color:#142744!important;font-weight:900!important;box-shadow:4px 5px 0 #17294a!important;padding:12px 20px!important;cursor:pointer!important}
+.cp-sort-actions .action-check:last-child{background:linear-gradient(135deg,#70eaff,#23b8f4)!important}
+@media(max-width:550px){.cp-sort-actions{flex-direction:column;align-items:stretch}.cp-sort-actions button{width:100%}}
