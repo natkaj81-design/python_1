@@ -119,3 +119,13 @@
 .cp-sort-actions .action-check{border:3px solid #17294a!important;border-radius:15px!important;background:linear-gradient(135deg,#ffec62,#ffbc00)!important;color:#142744!important;font-weight:900!important;box-shadow:4px 5px 0 #17294a!important;padding:12px 20px!important;cursor:pointer!important}
 .cp-sort-actions .action-check:last-child{background:linear-gradient(135deg,#70eaff,#23b8f4)!important}
 @media(max-width:550px){.cp-sort-actions{flex-direction:column;align-items:stretch}.cp-sort-actions button{width:100%}}
+
+/* Єдиний стиль карток задач у розділах 10 та 13 */
+.ce-problem-variant{font-weight:850;font-size:1.15rem;margin:10px 0 18px;color:#102d53}
+.ce-problems-grid{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}
+.ce-problem-card{background:#fff!important;border:2px solid #17213c!important;border-radius:17px!important;padding:20px 18px!important;box-shadow:none!important}
+.ce-problem-title,.np-task-title{font-weight:900;font-size:1.08rem;color:#10213b;margin:0 0 14px;line-height:1.4}
+.ce-problem-text,.np-task-text{margin:0!important;white-space:pre-wrap;line-height:1.5;color:#14233d}
+.np-work .np-question:has(.np-task-title){display:block!important;background:#fff;border:2px solid #17213c;border-radius:17px;padding:20px 18px;margin:12px 0}
+
+.ce-heading-variant{font-weight:850;font-size:.85em;color:inherit} .np-task-title{font-weight:900!important} .np-task-text{display:block;margin-top:10px!important}
