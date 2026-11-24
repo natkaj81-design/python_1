@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Python з нуля — Введення і виведення даних</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101112;color:#eee;font:16px system-ui;display:grid;place-items:center;min-height:100vh;padding:10px}
+main{width:min(100%,620px);background:#202122;padding:14px 18px;border-radius:18px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+header{display:flex;justify-content:space-between;align-items:center;color:#ffda48;gap:8px}
+h1{font-size:24px;margin:0}
+small{color:#aaa}
+h2{margin:8px 0;font-size:17px;color:#fff}
+.editor{background:#111213;border:1px solid #393939;border-radius:14px;padding:9px 12px}
+.bar{display:flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:50%}
+button{border:0;border-radius:9px;padding:7px 10px;background:#383a3c;color:white;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(1.18)}
+#run{margin-left:auto;background:#197747}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font:600 clamp(14px,3.8vw,20px)/1.55 monospace;min-height:72px;margin:6px 0 0}
+.str{color:#f5a45e}.num{color:#b5e68b}.fn{color:#83d7ff}.op{color:#fff}.cursor{border-right:2px solid #fff;animation:blink .7s infinite}
+@keyframes blink{50%{border-color:transparent}}
+.panel-label{margin:7px 0 2px;color:#bfbfbf;font-size:12px;letter-spacing:.06em}
+#output{min-height:30px;color:#ffda48;font:bold 19px/1.4 monospace;white-space:pre-wrap;background:#141516;border:1px solid #343434;border-radius:12px;padding:10px 12px}
+.stage{height:220px;display:grid;grid-template-columns:210px 1fr;gap:12px;align-items:center;margin-top:10px}
+@media(max-width:560px){.stage{grid-template-columns:1fr;height:auto}.snake-wrap{justify-content:center}.viz{min-height:130px}}
+.snake-wrap{display:flex;justify-content:flex-start}
+.snake{width:205px;height:135px;overflow:visible}
+.typing .head,.happy .head{transform-origin:155px 90px}.typing .arm{transform-origin:124px 117px;animation:tap .17s infinite alternate}.happy .arm{transform-origin:124px 117px;animation:tap .4s infinite alternate}.happy .head{animation:nod .4s infinite alternate}.typing .head{animation:nod .35s infinite alternate}
+@keyframes nod{to{transform:rotate(-9deg) translateY(-5px)}}
+@keyframes tap{to{transform:rotate(12deg)}}
+.eyes{transform-origin:160px 47px;animation:eyeBlink 4s infinite}
+@keyframes eyeBlink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+.spark{opacity:0}.happy .spark{opacity:1;animation:blink .8s infinite}
+.viz{background:#141516;border:1px solid #383838;border-radius:16px;padding:10px;min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.viz-title{font-size:12px;color:#a7b0b7;text-transform:uppercase;letter-spacing:.08em}
+.cells{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.cell{min-width:92px;padding:8px 10px;border-radius:14px;background:#1e3150;border:2px solid #41b8ff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);transform:scale(.85);opacity:0;transition:transform .35s,opacity .35s,background .35s,border-color .35s}
+.cell.show{transform:scale(1);opacity:1}
+.cell.flash{animation:flash .55s 1}
+@keyframes flash{0%{transform:scale(1)}35%{transform:scale(1.08);background:#295e29;border-color:#8bf58b}100%{transform:scale(1)}}
+.name{font:700 14px/1.2 system-ui;color:#9ed8ff}
+.value{font:700 22px/1.2 monospace;color:#fff;margin-top:4px}
+.value.small{font-size:17px}
+.arrow{color:#ffd84b;font-weight:900;font-size:22px;align-self:center;padding-top:4px}
+#note{min-height:38px;font-size:14px;line-height:1.3;color:#ddd;margin-top:6px}
+.track{height:5px;background:#444;margin:8px 0;border-radius:4px}.progress{height:100%;background:#ffda48;transition:width .2s}
+.controls{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+footer{text-align:center;color:#999;font-size:12px;margin-top:7px}
+.quiz{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.quiz button{background:#30465f;text-align:left;padding:10px 12px;font-size:16px}
+.quiz button.correct{background:#1e7b3b}.quiz button.wrong{background:#8e2a2a}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#30465f;color:#d9ecff;font-size:12px}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+#answerStatus{font-weight:700;color:#ffda48;min-height:22px}
+@media(prefers-reduced-motion:reduce){.typing .head,.happy .head,.typing .arm,.happy .arm,.eyes,.spark,.cell{animation:none!important;transition:none!important}}
+
+.stage{height:auto;min-height:135px;grid-template-columns:185px minmax(0,1fr);gap:8px}.viz{min-height:112px;padding:8px;gap:5px}.snake{max-width:100%;height:auto}.cell{min-width:70px;max-width:100%;padding:6px 8px}.value{font-size:18px;overflow-wrap:anywhere}.value.small{font-size:14px}.name{overflow-wrap:anywhere}.cell.bad{background:#49282e;border-color:#f77883}.cell.good{background:#244532;border-color:#79dba0}.cell.warn{background:#4b3b21;border-color:#ffcf66}.quiz button{font:600 13px/1.3 monospace;overflow-wrap:anywhere;padding:7px}.quiz button:disabled{opacity:1;cursor:default}#answerStatus:empty,#legend:empty{display:none}#output{font-size:16px;min-height:38px}#note{min-height:36px}pre{min-height:48px;tab-size:4;white-space:pre;overflow-x:auto;overflow-wrap:normal} .comment{color:#9aab9a}.bad-result{color:#ff9c9c!important}.paused .head,.paused .arm,.paused .eyes,.paused .spark{animation-play-state:paused!important}button:focus-visible{outline:2px solid #ffda48;outline-offset:2px}
+@media(max-width:560px){.stage{grid-template-columns:minmax(90px,34%) minmax(0,1fr);min-height:110px}.snake-wrap{justify-content:center}.viz{min-height:105px}.cell{min-width:60px}.cells{gap:5px}.value{font-size:16px}main{padding:12px}h1{font-size:22px}.quiz{grid-template-columns:1fr}#note{font-size:13px}}
+#output{tab-size:4;white-space:pre-wrap;overflow-wrap:anywhere} .entered{color:#9de5af}.prompt{color:#b9cce1}#correction{background:#3b3020;border-left:3px solid #ffcf66;border-radius:5px;padding:7px 9px;margin-top:6px;font-size:13px;line-height:1.35;color:#ffe1a0}#correction[hidden]{display:none}.quiz button{white-space:pre-wrap} </style>
+</head>
+<body>
+<main>
+  <header><h1>Python 🐍</h1><small id="count"></small></header>
+  <h2 id="topic"></h2>
+  <div class="editor">
+    <div class="bar"><i class="dot" style="background:#ff6159"></i><i class="dot" style="background:#ffbd42"></i><i class="dot" style="background:#42c85a"></i><button id="run">▶ RUN</button></div>
+    <pre id="code"></pre>
+  </div>
+
+  <div class="panel-label">РЕЗУЛЬТАТ ВИКОНАННЯ / ПЕРЕВІРКИ</div>
+  <div id="output" aria-live="polite"></div>
+
+  <div class="stage" id="stage">
+    <div class="snake-wrap">
+      <svg class="snake" viewBox="0 0 300 190" aria-label="Анімований синьо-жовтий пітончик">
+        <defs><linearGradient id="blue" x2=".7" y2="1"><stop stop-color="#40d8ff"/><stop offset=".5" stop-color="#087fe6"/><stop offset="1" stop-color="#034cae"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff66a"/><stop offset="1" stop-color="#ffb500"/></linearGradient></defs>
+        <ellipse cx="150" cy="178" rx="120" ry="8" fill="#111"/>
+        <g stroke="#101b32" stroke-width="3.5" stroke-linejoin="round">
+          <path d="M174 151 Q246 125 260 150 Q276 181 194 175 L108 175 Q61 169 84 145 Q102 127 145 148" fill="none" stroke="#101b32" stroke-width="30" stroke-linecap="round"/>
+          <path d="M174 151 Q246 125 260 150 Q276 181 194 175 L108 175 Q61 169 84 145 Q102 127 145 148" fill="none" stroke="#078fe5" stroke-width="23" stroke-linecap="round"/>
+          <path d="M100 164 Q140 180 210 166" fill="none" stroke="#ffd32c" stroke-width="10" stroke-linecap="round"/>
+          <path d="M117 109 Q91 94 107 81 Q130 67 156 89 Q190 84 203 113 L215 153 Q175 169 116 150Z" fill="url(#gold)"/>
+          <path d="M110 88 Q130 112 156 110 Q178 105 184 91" fill="none" stroke="#d38a00" stroke-width="5"/>
+          <path d="M145 111 L142 134 M171 110 L176 132" stroke="#fff" stroke-width="3"/>
+          <g class="head"><path d="M113 78 Q94 47 114 23 Q139 0 176 12 Q205 18 211 48 Q234 54 228 75 Q218 99 176 101 Q130 103 113 78Z" fill="url(#blue)"/><path d="M116 33 Q134 9 165 16 L151 21 L174 25" fill="none" stroke="#a7edff" stroke-width="4"/><path d="M121 66 Q137 56 158 66 Q184 48 210 58 Q235 62 226 80 Q211 101 171 101 Q137 99 121 66Z" fill="url(#gold)"/><g class="eyes"><ellipse cx="139" cy="47" rx="17" ry="23" fill="white"/><ellipse cx="185" cy="43" rx="17" ry="23" fill="white"/><ellipse cx="144" cy="49" rx="9" ry="14" fill="#6d381a"/><ellipse cx="189" cy="45" rx="9" ry="14" fill="#6d381a"/><ellipse cx="146" cy="49" rx="5" ry="11" fill="#10121a"/><ellipse cx="191" cy="45" rx="5" ry="11" fill="#10121a"/><circle cx="140" cy="42" r="4" fill="white" stroke="none"/><circle cx="185" cy="38" r="4" fill="white" stroke="none"/></g><g fill="none" stroke="#111827" stroke-width="6"><rect x="115" y="27" width="45" height="43" rx="10" transform="rotate(-9 137 48)"/><rect x="165" y="23" width="44" height="42" rx="10" transform="rotate(-9 187 44)"/><path d="M159 42 L166 40 M113 40 L103 35"/></g><path d="M150 78 Q182 93 211 73 Q196 105 170 94Z" fill="#4a1724"/><path d="M170 94 Q182 82 194 92" fill="#ff5373" stroke="none"/><ellipse cx="211" cy="63" rx="3" ry="2" fill="#493019" stroke="none"/></g>
+          <g class="arm"><path d="M124 117 Q112 137 92 137" fill="none" stroke="#101b32" stroke-width="19" stroke-linecap="round"/><path d="M124 117 Q112 137 92 137" fill="none" stroke="#ffc62c" stroke-width="13" stroke-linecap="round"/><ellipse cx="89" cy="138" rx="13" ry="8" fill="#159ce9"/></g>
+          <path d="M24 106 H93 L119 153 H48Z" fill="#526b8b"/><path d="M48 153 H151 L143 161 H48Z" fill="#a3b8cc"/>
+          <g stroke="none"><path d="M63 119 h12 q6 0 6 6 v6 H67 v-4 H57 v-3 q0-5 6-5" fill="#1689ee"/><path d="M81 139 H69 q-6 0-6-6 v-5 h14 v4 h10 v2 q0 5-6 5" fill="#ffda35"/></g>
+        </g>
+        <g class="spark" fill="#ffda48"><text x="235" y="45" font-size="30">✦</text><text x="80" y="25" font-size="22">✧</text></g>
+      </svg>
+    </div>
+    <div class="viz">
+      <div class="viz-title" id="vizTitle">Пам'ять комп'ютера</div>
+      <div id="legend" class="legend"></div>
+      <div class="cells" id="cells"></div>
+      <div id="answerStatus" aria-live="polite"></div>
+      <div class="quiz" id="quiz"></div>
+    </div>
+  </div>
+
+  <div id="note"></div><div id="correction" role="note" hidden></div>
+  <div class="track"><div class="progress" id="progress"></div></div>
+  <div class="controls">
+    <button id="sound" aria-pressed="true">🔊 Звук</button>
+    <button id="prev" aria-label="Попередня сцена">←</button>
+    <button id="play">⏸ Пауза</button>
+    <button id="next" aria-label="Наступна сцена">→</button>
+    <button id="restart">↻ Спочатку</button>
+  </div>
+  <footer>Python з нуля • Навчайся, експериментуй, перевіряй!</footer>
+</main>
+<script>const scenes=[{"title": "1. Виведення тексту", "code": "print(\"Вітаю!\")", "note": "print() виводить значення на екран. Текст записуємо в лапках.", "cards": [{"name": "Команда", "value": "print()", "kind": "good"}, {"name": "Результат", "value": "Вітаю!", "kind": "good"}], "events": [["printed", "Вітаю!\n"]]}, {"title": "2. Введення даних", "code": "city = input(\"Твоє місто: \")\nprint(f\"{city}\")", "note": "input() показує запрошення, чекає введення та повертає рядок (str).", "cards": [{"name": "city", "value": "\"Луцьк\"", "kind": "good"}, {"name": "Тип", "value": "str", "kind": "good"}], "events": [["prompt", "Твоє місто: "], ["entered", "Луцьк"], ["newline", "\n"], ["printed", "Луцьк\n"]]}, {"title": "3. Привітання", "code": "name = input(\"Як тебе звати? \")\nprint(f\"Привіт, {name}!\")", "note": "input() повертає рядок. f-рядок вставляє значення name у текст.", "cards": [{"name": "name", "value": "\"Оля\"", "kind": "good"}, {"name": "f-рядок", "value": "{name} → Оля", "kind": "good"}], "events": [["prompt", "Як тебе звати? "], ["entered", "Оля"], ["newline", "\n"], ["printed", "Привіт, Оля!\n"]]}, {"title": "4. Введення цілого числа", "code": "n = int(input(\"Кількість: \"))\nprint(f\"{n + 2}\")", "note": "int() перетворює введений рядок на ціле число. Тоді можна виконати додавання.", "cards": [{"name": "Введено", "value": "\"6\"", "kind": "good"}, {"name": "n", "value": "6", "kind": "good"}, {"name": "n + 2", "value": "8", "kind": "good"}], "events": [["prompt", "Кількість: "], ["entered", "6"], ["newline", "\n"], ["printed", "8\n"]]}, {"title": "5. Введення дійсного числа", "code": "price = float(input(\"Ціна: \"))\nprint(f\"{price * 2}\")", "note": "float() перетворює введений рядок на дійсне число. Десятковий роздільник — крапка.", "cards": [{"name": "Введено", "value": "\"12.5\"", "kind": "good"}, {"name": "price", "value": "12.5", "kind": "good"}, {"name": "Результат", "value": "25.0", "kind": "good"}], "events": [["prompt", "Ціна: "], ["entered", "12.5"], ["newline", "\n"], ["printed", "25.0\n"]]}, {"title": "6. Скільки років до повноліття?", "code": "age = int(input(\"Скільки тобі років? \"))\nyears = 18 - age\nprint(f\"До повноліття залишилося {years} років!\")", "note": "int() перетворює введений текст на ціле число. 18 − 13 = 5.", "cards": [{"name": "age", "value": "13", "kind": "good"}, {"name": "years", "value": "5", "kind": "good"}], "events": [["prompt", "Скільки тобі років? "], ["entered", "13"], ["newline", "\n"], ["printed", "До повноліття залишилося 5 років!\n"]]}, {"title": "7. Перевір себе", "code": "name = \"Іра\"\nprint(f\"Привіт, {name}!\")", "note": "У f-рядку значення змінної підставляється замість виразу у фігурних дужках.", "cards": [{"name": "{name}", "value": "Іра", "kind": "good"}], "events": [["printed", "Привіт, Іра!\n"]], "quiz": ["Привіт, name!", "Привіт, Іра!", "Привіт, {name}!", "Іра"], "correct": 1}];const vizTitle="Як працює програма";
+const $=id=>document.getElementById(id);
+let audio=null,sound=true;function unlock(){if(!sound)return;try{if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state!=='running')audio.resume().catch(()=>{});}catch(e){}}function keySound(){if(!sound)return;unlock();if(!audio||audio.state!=='running')return;const t=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.setValueAtTime(1350,t);o.frequency.exponentialRampToValueAtTime(420,t+.045);g.gain.setValueAtTime(.325,t);g.gain.exponentialRampToValueAtTime(.001,t+.075);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.08)}function resultSound(){if(!sound)return;unlock();if(!audio||audio.state!=='running')return;const t=audio.currentTime;[660,880].forEach((f,j)=>{const a=t+j*.105,o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,a);g.gain.exponentialRampToValueAtTime(.22,a+.012);g.gain.exponentialRampToValueAtTime(.001,a+.19);o.connect(g);g.connect(audio.destination);o.start(a);o.stop(a+.2)})}document.addEventListener('pointerdown',unlock,true);document.addEventListener('keydown',unlock,true);$('sound').textContent='🔊 Звук';$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'🔊 Звук':'🔇 Звук';$('sound').setAttribute('aria-pressed',String(sound));if(sound){unlock();keySound()}};unlock();
+let idx=0,pos=0,phase='type',playing=true,timer=null,step=0,eventIndex=0,letter=0,chunk=null;
+function schedule(ms){clearTimeout(timer);if(playing)timer=setTimeout(tick,ms)}
+function stage(state){$('stage').className='stage '+state+(playing?'':' paused')}
+function paint(s,caret=true){$('code').replaceChildren();const re=/("(?:\\.|[^"\\\n])*"?|#[^\n]*|\b\d+(?:\.\d+)?\b|\b(?:print|input|type|True|False|int|float|str|bool|sep|end)\b)/g;let last=0;for(const m of s.matchAll(re)){$('code').append(document.createTextNode(s.slice(last,m.index)));const e=document.createElement('span');e.className=m[0][0]==='"'?'str':m[0][0]==='#'?'comment':/^\d/.test(m[0])?'num':'fn';e.textContent=m[0];$('code').append(e);last=m.index+m[0].length}$('code').append(document.createTextNode(s.slice(last)));if(caret){const c=document.createElement('span');c.className='cursor';c.textContent=' ';$('code').append(c)}}
+function renderCards(cards){$('cells').replaceChildren();for(const item of cards){const box=document.createElement('div');box.className='cell '+item.kind;const n=document.createElement('div');n.className='name';n.textContent=item.name;const v=document.createElement('div');v.className='value'+(item.value.length>9?' small':'');v.textContent=item.value;box.append(n,v);$('cells').append(box);requestAnimationFrame(()=>box.classList.add('show'))}}
+function load(n){clearTimeout(timer);idx=(n+scenes.length)%scenes.length;pos=0;step=0;phase='type';const s=scenes[idx];$('topic').textContent=s.title;$('count').textContent=`МІНІУРОК • ${idx+1}/${scenes.length}`;$('progress').style.width=`${(idx+1)/scenes.length*100}%`;$('output').textContent='';$('output').className='';$('note').textContent='';$('correction').hidden=true;$('correction').textContent='';eventIndex=0;letter=0;chunk=null;$('quiz').replaceChildren();$('quiz').style.display='none';$('answerStatus').textContent='';$('vizTitle').textContent=vizTitle;renderCards([]);stage('typing');paint('');schedule(70)}
+function tick(){const s=scenes[idx];if(phase==='type'){paint(s.code.slice(0,++pos));keySound();if(pos>=s.code.length){phase='run';schedule(750)}else schedule(55)}else if(phase==='run'){run()}else if(phase==='events'){advanceEvent()}else if(phase==='done'){load(idx+1)}}
+function finish(){const s=scenes[idx];$('note').textContent=s.note;renderCards(s.cards);if(s.correction){$('correction').textContent='⚠ '+s.correction;$('correction').hidden=false}stage('happy');phase='done';schedule(s.correction?11000:6500)}
+function advanceEvent(){const s=scenes[idx];if(eventIndex>=s.events.length){finish();return}const [kind,value]=s.events[eventIndex];if(kind==='entered'){if(!chunk){chunk=document.createElement('span');chunk.className='entered';$('output').append(chunk)}if(letter<value.length){chunk.textContent+=value[letter++];keySound();schedule(145);return}}else{const el=document.createElement('span');el.className=kind;el.textContent=value;$('output').append(el);if(kind==='printed')resultSound()}eventIndex++;letter=0;chunk=null;schedule(kind==='prompt'?650:kind==='printed'?550:180)}
+function run(){clearTimeout(timer);const s=scenes[idx];paint(s.code,false);$('quiz').replaceChildren();$('quiz').style.display='none';$('answerStatus').textContent='';$('output').className='';$('output').replaceChildren();$('note').textContent='';$('correction').hidden=true;renderCards([]);$('vizTitle').textContent=vizTitle;eventIndex=0;letter=0;chunk=null;if(s.quiz){phase='quiz';stage('');$('vizTitle').textContent='Мініперевірка';$('output').textContent='Що з’явиться на екрані?';$('quiz').style.display='grid';s.quiz.forEach((choice,j)=>{const b=document.createElement('button');b.textContent=choice;b.onclick=()=>answer(j,b);$('quiz').append(b)});return}phase='events';stage('typing');advanceEvent()}
+function answer(j,b){if(phase!=='quiz')return;const s=scenes[idx];if(j!==s.correct){b.classList.add('wrong');$('answerStatus').textContent='Спробуй ще раз.';return}for(const x of $('quiz').children)x.disabled=true;b.classList.add('correct');$('answerStatus').textContent='✅ Правильно!';$('quiz').style.display='none';$('output').replaceChildren();phase='events';advanceEvent()}
+$('run').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';run()};$('prev').onclick=()=>load(idx-1);$('next').onclick=()=>load(idx+1);$('restart').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';load(0)};$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Пауза':'▶ Відтворити';$('stage').classList.toggle('paused',!playing);if(playing)schedule(150);else clearTimeout(timer)};load(0);
+</script></body></html>
