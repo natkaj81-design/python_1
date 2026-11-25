@@ -87,12 +87,17 @@ footer{text-align:center;color:#999;font-size:12px;margin-top:7px}
 .paused .div-ball{animation-play-state:paused!important}
 @media(max-width:560px){.division-viz{gap:4px}.div-ball{width:10px;height:10px}.div-group{gap:3px}.div-group .group-label{min-width:47px;font-size:10px}.div-summary span{font-size:10px;padding:4px}.div-summary b{font-size:17px}.div-source{gap:4px}}
 @media(prefers-reduced-motion:reduce){.div-ball,.div-group{animation:none!important;transition:none!important}}
+
+#steps{display:flex;gap:4px;margin:5px 0 9px}
+#steps button{flex:1;min-width:0;padding:5px 0;font-size:12px}
+#steps button.current{background:#ffda48;color:#141516}
+#steps button:focus-visible{outline:2px solid #83d7ff}
 </style>
 </head>
 <body>
 <main>
   <header><h1>Python 🐍</h1><small id="count"></small></header>
-  <h2 id="topic"></h2>
+  <h2 id="topic"></h2><div id="steps" role="group" aria-label="Етапи уроку"></div>
   <div class="editor">
     <div class="bar"><i class="dot" style="background:#ff6159"></i><i class="dot" style="background:#ffbd42"></i><i class="dot" style="background:#42c85a"></i><button id="run">▶ RUN</button></div>
     <pre id="code"></pre>
@@ -166,11 +171,25 @@ function advanceDivision(){
  phase='events';advanceEvent();
 }
 
-function load(n){clearTimeout(timer);idx=(n+scenes.length)%scenes.length;pos=0;step=0;phase='type';const s=scenes[idx];$('topic').textContent=s.title;$('count').textContent=`МІНІУРОК • ${idx+1}/${scenes.length}`;$('progress').style.width=`${(idx+1)/scenes.length*100}%`;$('output').textContent='';$('output').className='';$('note').textContent='';$('correction').hidden=true;$('correction').textContent='';eventIndex=0;letter=0;chunk=null;$('quiz').replaceChildren();$('quiz').style.display='none';$('answerStatus').textContent='';$('vizTitle').textContent=vizTitle;renderCards([]);stage('typing');paint('');schedule(70)}
+function load(n){clearTimeout(timer);idx=(n+scenes.length)%scenes.length;updateStepButtons();pos=0;step=0;phase='type';const s=scenes[idx];$('topic').textContent=s.title;$('count').textContent=`МІНІУРОК • ${idx+1}/${scenes.length}`;$('progress').style.width=`${(idx+1)/scenes.length*100}%`;$('output').textContent='';$('output').className='';$('note').textContent='';$('correction').hidden=true;$('correction').textContent='';eventIndex=0;letter=0;chunk=null;$('quiz').replaceChildren();$('quiz').style.display='none';$('answerStatus').textContent='';$('vizTitle').textContent=vizTitle;renderCards([]);stage('typing');paint('');schedule(70)}
 function tick(){const s=scenes[idx];if(phase==='type'){paint(s.code.slice(0,++pos));keySound();if(pos>=s.code.length){phase='run';schedule(750)}else schedule(55)}else if(phase==='run'){run()}else if(phase==='division'){advanceDivision()}else if(phase==='events'){advanceEvent()}else if(phase==='done'){load(idx+1)}}
 function finish(){const s=scenes[idx];$('note').textContent=s.note;if(!isDivision())renderCards(s.cards);if(s.correction){$('correction').textContent='⚠ '+s.correction;$('correction').hidden=false}stage('happy');phase='done';schedule(s.correction?11000:6500)}
 function advanceEvent(){const s=scenes[idx];if(eventIndex>=s.events.length){finish();return}const [kind,value]=s.events[eventIndex];if(kind==='entered'){if(!chunk){chunk=document.createElement('span');chunk.className='entered';$('output').append(chunk)}if(letter<value.length){chunk.textContent+=value[letter++];keySound();schedule(145);return}}else{const el=document.createElement('span');el.className=kind;el.textContent=value;$('output').append(el);if(kind==='printed')resultSound()}eventIndex++;letter=0;chunk=null;schedule(kind==='prompt'?650:kind==='printed'?550:180)}
 function run(){clearTimeout(timer);const s=scenes[idx];paint(s.code,false);$('quiz').replaceChildren();$('quiz').style.display='none';$('answerStatus').textContent='';$('output').className='';$('output').replaceChildren();$('note').textContent='';$('correction').hidden=true;renderCards([]);$('vizTitle').textContent=vizTitle;eventIndex=0;letter=0;chunk=null;if(s.quiz){phase='quiz';stage('');$('vizTitle').textContent='Мініперевірка';$('output').textContent='Що з’явиться на екрані?';$('quiz').style.display='grid';s.quiz.forEach((choice,j)=>{const b=document.createElement('button');b.textContent=choice;b.onclick=()=>answer(j,b);$('quiz').append(b)});return}if(isDivision()){step=0;phase='division';stage('typing');drawDivision(0);schedule(650);return}phase='events';stage('typing');advanceEvent()}
 function answer(j,b){if(phase!=='quiz')return;const s=scenes[idx];if(j!==s.correct){b.classList.add('wrong');$('answerStatus').textContent='Спробуй ще раз.';return}for(const x of $('quiz').children)x.disabled=true;b.classList.add('correct');$('answerStatus').textContent='✅ Правильно!';$('quiz').style.display='none';$('output').replaceChildren();phase='events';advanceEvent()}
-$('run').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';run()};$('prev').onclick=()=>load(idx-1);$('next').onclick=()=>load(idx+1);$('restart').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';load(0)};$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Пауза':'▶ Відтворити';$('stage').classList.toggle('paused',!playing);if(playing)schedule(150);else clearTimeout(timer)};load(0);
+$('run').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';run()};$('prev').onclick=()=>load(idx-1);$('next').onclick=()=>load(idx+1);$('restart').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';load(0)};$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Пауза':'▶ Відтворити';$('stage').classList.toggle('paused',!playing);if(playing)schedule(150);else clearTimeout(timer)};
+function updateStepButtons(){
+  [...$('steps').children].forEach((button,j)=>{
+    button.classList.toggle('current',j===idx);
+    if(j===idx)button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
+  });
+}
+scenes.forEach((scene,j)=>{
+  const button=document.createElement('button');
+  button.type='button';button.textContent=j+1;
+  button.title=scene.title;button.setAttribute('aria-label',`Етап ${j+1}: ${scene.title}`);
+  button.onclick=()=>load(j);
+  $('steps').append(button);
+});
+load(0);
 </script></body></html>

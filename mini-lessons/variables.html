@@ -54,12 +54,17 @@ footer{text-align:center;color:#999;font-size:12px;margin-top:7px}
 .legend{display:flex;gap:8px;flex-wrap:wrap}
 #answerStatus{font-weight:700;color:#ffda48;min-height:22px}
 @media(prefers-reduced-motion:reduce){.typing .head,.happy .head,.typing .arm,.happy .arm,.eyes,.spark,.cell{animation:none!important;transition:none!important}}
+
+#steps{display:flex;gap:4px;margin:5px 0 9px}
+#steps button{flex:1;min-width:0;padding:5px 0;font-size:12px}
+#steps button.current{background:#ffda48;color:#141516}
+#steps button:focus-visible{outline:2px solid #83d7ff}
 </style>
 </head>
 <body>
 <main>
   <header><h1>Python 🐍</h1><small id="count"></small></header>
-  <h2 id="topic"></h2>
+  <h2 id="topic"></h2><div id="steps" role="group" aria-label="Етапи уроку"></div>
   <div class="editor">
     <div class="bar"><i class="dot" style="background:#ff6159"></i><i class="dot" style="background:#ffbd42"></i><i class="dot" style="background:#42c85a"></i><button id="run">▶ RUN</button></div>
     <pre id="code"></pre>
@@ -124,7 +129,7 @@ const scenes = [
     output:'Змінна level спочатку мала 1, а потім отримала нове значення 2.',
     note:'Значення змінної можна змінювати. Старе значення замінюється новим.',
     setup(){setVizTitle("Оновлення значення"); setLegend([]); renderCells([{name:'level', value:'1'}]);},
-    async run(){ await flashUpdate([{name:'level', value:'1'}]); await wait(650); await flashUpdate([{name:'level', value:'2'}]); }
+    async run(token){ await flashUpdate([{name:'level', value:'1'}]); await wait(650); if(token!==sceneToken)return; await flashUpdate([{name:'level', value:'2'}]); }
   },
   {
     title:'3. Різні типи даних',
@@ -140,7 +145,7 @@ const scenes = [
     output:'3 × 80 = 240, тому total дорівнює 240.',
     note:'Можна використовувати значення змінних у виразах і зберігати результат у новій змінній.',
     setup(){setVizTitle("Обчислення"); setLegend([]); renderCells([{name:'tickets', value:'3'},{name:'price', value:'80'}]);},
-    async run(){ await wait(500); renderCells([{name:'tickets', value:'3'},{name:'price', value:'80'},{name:'total', value:'240'}],2); }
+    async run(token){ await wait(500); if(token!==sceneToken)return; renderCells([{name:'tickets', value:'3'},{name:'price', value:'80'},{name:'total', value:'240'}],2); }
   },
   {
     title:'5. Змінна змінює власне значення',
@@ -148,7 +153,7 @@ const scenes = [
     output:'Значення змінної coins змінювалося так: 10 → 15 → 12.',
     note:'Змінна може обчислювати нове значення на основі свого попереднього значення.',
     setup(){setVizTitle("Зміни крок за кроком"); setLegend([]); renderCells([{name:'coins', value:'10'}]);},
-    async run(){ await flashUpdate([{name:'coins', value:'10'}]); await wait(650); await flashUpdate([{name:'coins', value:'15'}]); await wait(650); await flashUpdate([{name:'coins', value:'12'}]); }
+    async run(token){ await flashUpdate([{name:'coins', value:'10'}]); await wait(650); if(token!==sceneToken)return; await flashUpdate([{name:'coins', value:'15'}]); await wait(650); if(token!==sceneToken)return; await flashUpdate([{name:'coins', value:'12'}]); }
   },
   {
     title:'6. Копіювання значення змінної',
@@ -156,7 +161,7 @@ const scenes = [
     output:'Після копіювання b отримала 7. Коли a змінилася на 20, b залишилася 7.',
     note:'У момент присвоювання b = a копіюється поточне значення змінної a.',
     setup(){setVizTitle("Копіювання значення"); setLegend([]); renderCells([{name:'a', value:'7'}]);},
-    async run(){ await wait(500); renderCells([{name:'a', value:'7'},{arrow:true},{name:'b', value:'7'}],1); await wait(850); renderCells([{name:'a', value:'20'},{arrow:true},{name:'b', value:'7'}],0); }
+    async run(token){ await wait(500); if(token!==sceneToken)return; renderCells([{name:'a', value:'7'},{arrow:true},{name:'b', value:'7'}],1); await wait(850); if(token!==sceneToken)return; renderCells([{name:'a', value:'20'},{arrow:true},{name:'b', value:'7'}],0); }
   },
   {
     title:'7. Передбач результат',
@@ -239,7 +244,7 @@ function answerQuiz(btn){
 function load(n){
   sceneToken++;
   clearTimeout(timer);
-  idx = (n + scenes.length) % scenes.length;
+  idx = (n + scenes.length) % scenes.length;updateStepButtons();
   pos = 0; phase='type';
   const sc = scenes[idx];
   $('topic').textContent = sc.title;
@@ -277,7 +282,7 @@ async function runScene(){
   paint(sc.code, false);
   $('output').textContent = sc.output;
   $('note').textContent = sc.note;
-  await Promise.resolve(sc.run?.());
+  await Promise.resolve(sc.run?.(token));
   if(token !== sceneToken) return;
   $('stage').className = 'stage happy';
   if(idx !== scenes.length-1){ resultSound(); phase='done'; schedule(3800); }
@@ -295,6 +300,20 @@ $('play').onclick = ()=>{
     else if(phase === 'done') schedule(350);
   } else clearTimeout(timer);
 };
+
+function updateStepButtons(){
+  [...$('steps').children].forEach((button,j)=>{
+    button.classList.toggle('current',j===idx);
+    if(j===idx)button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
+  });
+}
+scenes.forEach((scene,j)=>{
+  const button=document.createElement('button');
+  button.type='button';button.textContent=j+1;
+  button.title=scene.title;button.setAttribute('aria-label',`Етап ${j+1}: ${scene.title}`);
+  button.onclick=()=>load(j);
+  $('steps').append(button);
+});
 load(0);
 </script>
 </body>

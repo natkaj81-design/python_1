@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Python з нуля — Квитки в кінотеатрі</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101112;color:#eee;font:16px system-ui;display:grid;place-items:center;min-height:100vh;padding:10px}
+main{width:min(100%,620px);background:#202122;padding:14px 18px;border-radius:18px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+header{display:flex;justify-content:space-between;align-items:center;color:#ffda48;gap:8px}
+h1{font-size:24px;margin:0}
+small{color:#aaa}
+h2{margin:8px 0;font-size:17px;color:#fff}
+.editor{background:#111213;border:1px solid #393939;border-radius:14px;padding:9px 12px}
+.bar{display:flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:50%}
+button{border:0;border-radius:9px;padding:7px 10px;background:#383a3c;color:white;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(1.18)}
+#run{margin-left:auto;background:#197747}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font:600 clamp(14px,3.8vw,20px)/1.55 monospace;min-height:72px;margin:6px 0 0}
+.str{color:#f5a45e}.num{color:#b5e68b}.fn{color:#83d7ff}.op{color:#fff}.cursor{border-right:2px solid #fff;animation:blink .7s infinite}
+@keyframes blink{50%{border-color:transparent}}
+.panel-label{margin:7px 0 2px;color:#bfbfbf;font-size:12px;letter-spacing:.06em}
+#output{min-height:30px;color:#ffda48;font:bold 19px/1.4 monospace;white-space:pre-wrap;background:#141516;border:1px solid #343434;border-radius:12px;padding:10px 12px}
+.stage{height:220px;display:grid;grid-template-columns:210px 1fr;gap:12px;align-items:center;margin-top:10px}
+@media(max-width:560px){.stage{grid-template-columns:1fr;height:auto}.snake-wrap{justify-content:center}.viz{min-height:130px}}
+.snake-wrap{display:flex;justify-content:flex-start}
+.snake{width:205px;height:135px;overflow:visible}
+.typing .head,.happy .head{transform-origin:155px 90px}.typing .arm{transform-origin:124px 117px;animation:tap .17s infinite alternate}.happy .arm{transform-origin:124px 117px;animation:tap .4s infinite alternate}.happy .head{animation:nod .4s infinite alternate}.typing .head{animation:nod .35s infinite alternate}
+@keyframes nod{to{transform:rotate(-9deg) translateY(-5px)}}
+@keyframes tap{to{transform:rotate(12deg)}}
+.eyes{transform-origin:160px 47px;animation:eyeBlink 4s infinite}
+@keyframes eyeBlink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+.spark{opacity:0}.happy .spark{opacity:1;animation:blink .8s infinite}
+.viz{background:#141516;border:1px solid #383838;border-radius:16px;padding:10px;min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.viz-title{font-size:12px;color:#a7b0b7;text-transform:uppercase;letter-spacing:.08em}
+.cells{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.cell{min-width:92px;padding:8px 10px;border-radius:14px;background:#1e3150;border:2px solid #41b8ff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);transform:scale(.85);opacity:0;transition:transform .35s,opacity .35s,background .35s,border-color .35s}
+.cell.show{transform:scale(1);opacity:1}
+.cell.flash{animation:flash .55s 1}
+@keyframes flash{0%{transform:scale(1)}35%{transform:scale(1.08);background:#295e29;border-color:#8bf58b}100%{transform:scale(1)}}
+.name{font:700 14px/1.2 system-ui;color:#9ed8ff}
+.value{font:700 22px/1.2 monospace;color:#fff;margin-top:4px}
+.value.small{font-size:17px}
+.arrow{color:#ffd84b;font-weight:900;font-size:22px;align-self:center;padding-top:4px}
+#note{min-height:38px;font-size:14px;line-height:1.3;color:#ddd;margin-top:6px}
+.track{height:5px;background:#444;margin:8px 0;border-radius:4px}.progress{height:100%;background:#ffda48;transition:width .2s}
+.controls{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+footer{text-align:center;color:#999;font-size:12px;margin-top:7px}
+.quiz{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.quiz button{background:#30465f;text-align:left;padding:10px 12px;font-size:16px}
+.quiz button.correct{background:#1e7b3b}.quiz button.wrong{background:#8e2a2a}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#30465f;color:#d9ecff;font-size:12px}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+#answerStatus{font-weight:700;color:#ffda48;min-height:22px}
+@media(prefers-reduced-motion:reduce){.typing .head,.happy .head,.typing .arm,.happy .arm,.eyes,.spark,.cell{animation:none!important;transition:none!important}}
+
+.stage{height:auto;min-height:135px;grid-template-columns:185px minmax(0,1fr);gap:8px}.viz{min-height:112px;padding:8px;gap:5px}.snake{max-width:100%;height:auto}.cell{min-width:70px;max-width:100%;padding:6px 8px}.value{font-size:18px;overflow-wrap:anywhere}.value.small{font-size:14px}.name{overflow-wrap:anywhere}.cell.bad{background:#49282e;border-color:#f77883}.cell.good{background:#244532;border-color:#79dba0}.cell.warn{background:#4b3b21;border-color:#ffcf66}.quiz button{font:600 13px/1.3 monospace;overflow-wrap:anywhere;padding:7px}.quiz button:disabled{opacity:1;cursor:default}#answerStatus:empty,#legend:empty{display:none}#output{font-size:16px;min-height:38px}#note{min-height:36px}pre{min-height:48px;tab-size:4;white-space:pre;overflow-x:auto;overflow-wrap:normal} .comment{color:#9aab9a}.bad-result{color:#ff9c9c!important}.paused .head,.paused .arm,.paused .eyes,.paused .spark{animation-play-state:paused!important}button:focus-visible{outline:2px solid #ffda48;outline-offset:2px}
+@media(max-width:560px){.stage{grid-template-columns:minmax(90px,34%) minmax(0,1fr);min-height:110px}.snake-wrap{justify-content:center}.viz{min-height:105px}.cell{min-width:60px}.cells{gap:5px}.value{font-size:16px}main{padding:12px}h1{font-size:22px}.quiz{grid-template-columns:1fr}#note{font-size:13px}}
+#output{tab-size:4;white-space:pre-wrap;overflow-wrap:anywhere} .entered{color:#9de5af}.prompt{color:#b9cce1}#correction{background:#3b3020;border-left:3px solid #ffcf66;border-radius:5px;padding:7px 9px;margin-top:6px;font-size:13px;line-height:1.35;color:#ffe1a0}#correction[hidden]{display:none}.quiz button{white-space:pre-wrap} 
+/* Visual division, scenes 3 and 4 only. */
+.division-viz{width:100%;display:grid;gap:6px;font-size:12px;color:#d7e5ef;line-height:1.25}
+.div-source,.div-group{display:flex;align-items:center;gap:5px;min-width:0}
+.div-source{flex-wrap:wrap;padding:5px 6px;background:#20252b;border-radius:8px}
+.div-source strong{font-size:12px;white-space:nowrap;color:#e3ebf3}
+.div-balls{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.div-ball{display:block;width:11px;height:11px;border-radius:50%;background:#506174;border:1px solid #8192a5;flex:none;transition:background .25s,opacity .25s;box-shadow:inset 0 1px 2px #ffffff25}
+.div-source .div-ball.used{opacity:.18;background:#53606d}
+.div-group{border:1px solid #35485d;padding:4px 5px;border-radius:7px;opacity:.42;transition:opacity .3s,background .3s,border-color .3s}
+.div-group.filled{opacity:1;background:#1d3552;border-color:#59baff}
+.div-group .div-ball{background:#60bdfb;border-color:#b2e4ff;opacity:.22}
+.div-group.filled .div-ball{opacity:1;animation:divPop .32s both;animation-delay:calc(var(--j)*45ms)}
+.div-group.remainder.filled{background:#49391f;border-color:#ffce64}
+.div-group.remainder .div-ball{background:#ffce64;border-color:#fff0b0}
+.div-group .group-label{font-size:11px;min-width:54px;flex:1}
+.div-group b{font-size:12px;color:#e8f4ff;margin-left:auto}
+.div-group.remainder b{color:#ffdc7e}
+.div-summary{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.div-summary span{border:1px solid #445160;border-radius:8px;padding:5px 6px;background:#222a35;display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:11px;min-width:0}
+.div-summary b{font-size:20px;color:#e7f0fa;line-height:1}
+.div-summary .selected{background:#194033;border-color:#80e2a7;color:#bfffd2}
+.div-summary .selected b{color:#a5f6b8}
+.div-summary .selected.remainder{background:#49391f;border-color:#ffce64;color:#ffe7a0}
+.div-summary .selected.remainder b{color:#ffdc7e}
+.div-equation{color:#aebac9;text-align:center;font:600 12px monospace}
+@keyframes divPop{from{transform:scale(.2);opacity:.1}to{transform:scale(1);opacity:1}}
+.paused .div-ball{animation-play-state:paused!important}
+@media(max-width:560px){.division-viz{gap:4px}.div-ball{width:10px;height:10px}.div-group{gap:3px}.div-group .group-label{min-width:47px;font-size:10px}.div-summary span{font-size:10px;padding:4px}.div-summary b{font-size:17px}.div-source{gap:4px}}
+@media(prefers-reduced-motion:reduce){.div-ball,.div-group{animation:none!important;transition:none!important}}
+
+.lesson-name{font-size:13px;color:#a9b8c8;margin-top:4px}#steps{display:flex;gap:4px;margin:5px 0 9px}#steps button{flex:1;padding:5px 0;font-size:12px}#steps button.current{background:#ffda48;color:#141516}#steps button:focus-visible{outline:2px solid #83d7ff}.stage{align-items:center;grid-template-columns:155px minmax(0,1fr)}.viz{min-width:0}.snake{width:180px}.cells{display:block;width:100%}.basket{background:#49391f;border:1px solid #b58a40;border-radius:9px;padding:6px;margin-bottom:6px}.basket-title{font-size:12px;color:#ffe0a0;display:flex;justify-content:space-between;align-items:center}.fruit{display:flex;gap:2px;flex-wrap:wrap;min-height:18px;align-items:center}.apple{display:inline-block;font-size:17px;line-height:1.1;animation:applePop .32s both}.pupils{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.pupil{background:#203650;border:1px solid #4275a4;border-radius:8px;padding:4px;min-width:0}.pupil-title{font-size:11px;color:#d6eaff;display:flex;justify-content:space-between;gap:2px}.pupil-title b{color:#8fd3ff}.pupil .fruit{min-height:20px}.mathline{font:600 12px/1.4 monospace;color:#ffda48;margin-top:6px;text-align:center}.memory{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}.mem{background:#1e3150;border:1px solid #41b8ff;padding:5px;border-radius:7px;font-size:12px;color:#a9d9ff;overflow-wrap:anywhere}.mem b{color:#fff;font:700 18px monospace;display:block}.mem.active{background:#244532;border-color:#79dba0}.mem.rest{background:#49391f;border-color:#ffce64}.line{display:block;min-height:1.5em;padding:0 3px;border-left:3px solid transparent}.line.active{background:#283e34;border-left-color:#79dba0}.line.done{color:#b8c9ba}.editor pre{font-size:clamp(12px,3.4vw,16px);line-height:1.5;min-height:30px}#output{font-size:14px;line-height:1.45;min-height:34px}.fields{display:flex;flex-wrap:wrap;gap:6px;align-items:end;margin-top:6px}.fields label{font-size:12px;display:grid;gap:3px;flex:1;min-width:80px}.fields input{width:100%;background:#111;color:#fff;border:1px solid #666;border-radius:7px;padding:7px;font:inherit;font-size:16px}.fields button{background:#197747}#inputError{color:#ff9c9c;font-size:12px}#experiment[hidden]{display:none}.quiz{grid-template-columns:1fr 1fr}.quiz button{white-space:normal}#note{min-height:0}.panel-label{letter-spacing:.02em}.paused .apple{animation-play-state:paused}@keyframes applePop{from{transform:translateY(-8px) scale(.5);opacity:.1}to{transform:translateY(0) scale(1);opacity:1}}@media(max-width:560px){.stage{grid-template-columns:minmax(80px,28%) minmax(0,1fr)}.apple{font-size:15px}.snake{width:100%}.viz{padding:6px}.pupils{gap:3px}.pupil-title{font-size:10px}.quiz{grid-template-columns:1fr 1fr}.fields button{flex:1}}@media(prefers-reduced-motion:reduce){.apple{animation:none}}
+body{grid-template-columns:minmax(0,1fr)}main,.editor,pre{min-width:0;max-width:100%}main{width:min(100%,620px)}pre{overflow-x:auto}
+</style>
+<style>.stage{height:auto;min-height:180px}.viz{min-width:0}.bigNumber{font:bold 26px monospace;color:#ffda48;text-align:center}.digitgrid,.flowrow{display:flex;gap:5px}.digit,.flowrow .mem{flex:1;min-width:0}.digit{border:1px solid #50667c;background:#253647;border-radius:8px;padding:5px 2px;text-align:center;opacity:.65}.digit.shown{opacity:1;border-color:#60bdfb}.digit b{display:block;color:#ffda48;font-size:23px}.digit small{display:block;font-size:10px;overflow-wrap:anywhere}.vizrow{display:flex;justify-content:space-between;gap:4px;font-size:12px;margin:3px 0;color:#d6eaff}.vizrow b{color:#ffda48}.meter{height:9px;background:#34383b;border-radius:4px;overflow:hidden}.meter i{display:block;height:100%;transition:width .15s}.clock{display:block;width:90px;margin:auto}.memory .mem b{font-size:15px}.mathline{overflow-wrap:anywhere}#correction{font-size:13px;color:#ffd99b;background:#403421;padding:7px;border-radius:7px;margin-top:5px}#correction[hidden]{display:none}</style></head>
+<body>
+<main>
+  <header><h1>Python 🐍</h1><small id="count"></small></header>
+  <div class="lesson-name">🎬 Квитки в кінотеатрі</div><h2 id="topic"></h2><div id="steps" aria-label="Етапи уроку"></div>
+  <div class="editor" id="editor">
+    <div class="bar"><i class="dot" style="background:#ff6159"></i><i class="dot" style="background:#ffbd42"></i><i class="dot" style="background:#42c85a"></i><button id="run">▶ RUN</button></div>
+    <pre id="code"></pre>
+  </div>
+
+  <div class="panel-label"><span id="outputLabel">РЕЗУЛЬТАТ</span></div>
+  <div id="output" aria-live="polite"></div>
+
+  <div class="stage" id="stage">
+    <div class="snake-wrap">
+      <svg class="snake" viewBox="0 0 300 190" aria-label="Анімований синьо-жовтий пітончик">
+        <defs><linearGradient id="blue" x2=".7" y2="1"><stop stop-color="#40d8ff"/><stop offset=".5" stop-color="#087fe6"/><stop offset="1" stop-color="#034cae"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff66a"/><stop offset="1" stop-color="#ffb500"/></linearGradient></defs>
+        <ellipse cx="150" cy="178" rx="120" ry="8" fill="#111"/>
+        <g stroke="#101b32" stroke-width="3.5" stroke-linejoin="round">
+          <path d="M174 151 Q246 125 260 150 Q276 181 194 175 L108 175 Q61 169 84 145 Q102 127 145 148" fill="none" stroke="#101b32" stroke-width="30" stroke-linecap="round"/>
+          <path d="M174 151 Q246 125 260 150 Q276 181 194 175 L108 175 Q61 169 84 145 Q102 127 145 148" fill="none" stroke="#078fe5" stroke-width="23" stroke-linecap="round"/>
+          <path d="M100 164 Q140 180 210 166" fill="none" stroke="#ffd32c" stroke-width="10" stroke-linecap="round"/>
+          <path d="M117 109 Q91 94 107 81 Q130 67 156 89 Q190 84 203 113 L215 153 Q175 169 116 150Z" fill="url(#gold)"/>
+          <path d="M110 88 Q130 112 156 110 Q178 105 184 91" fill="none" stroke="#d38a00" stroke-width="5"/>
+          <path d="M145 111 L142 134 M171 110 L176 132" stroke="#fff" stroke-width="3"/>
+          <g class="head"><path d="M113 78 Q94 47 114 23 Q139 0 176 12 Q205 18 211 48 Q234 54 228 75 Q218 99 176 101 Q130 103 113 78Z" fill="url(#blue)"/><path d="M116 33 Q134 9 165 16 L151 21 L174 25" fill="none" stroke="#a7edff" stroke-width="4"/><path d="M121 66 Q137 56 158 66 Q184 48 210 58 Q235 62 226 80 Q211 101 171 101 Q137 99 121 66Z" fill="url(#gold)"/><g class="eyes"><ellipse cx="139" cy="47" rx="17" ry="23" fill="white"/><ellipse cx="185" cy="43" rx="17" ry="23" fill="white"/><ellipse cx="144" cy="49" rx="9" ry="14" fill="#6d381a"/><ellipse cx="189" cy="45" rx="9" ry="14" fill="#6d381a"/><ellipse cx="146" cy="49" rx="5" ry="11" fill="#10121a"/><ellipse cx="191" cy="45" rx="5" ry="11" fill="#10121a"/><circle cx="140" cy="42" r="4" fill="white" stroke="none"/><circle cx="185" cy="38" r="4" fill="white" stroke="none"/></g><g fill="none" stroke="#111827" stroke-width="6"><rect x="115" y="27" width="45" height="43" rx="10" transform="rotate(-9 137 48)"/><rect x="165" y="23" width="44" height="42" rx="10" transform="rotate(-9 187 44)"/><path d="M159 42 L166 40 M113 40 L103 35"/></g><path d="M150 78 Q182 93 211 73 Q196 105 170 94Z" fill="#4a1724"/><path d="M170 94 Q182 82 194 92" fill="#ff5373" stroke="none"/><ellipse cx="211" cy="63" rx="3" ry="2" fill="#493019" stroke="none"/></g>
+          <g class="arm"><path d="M124 117 Q112 137 92 137" fill="none" stroke="#101b32" stroke-width="19" stroke-linecap="round"/><path d="M124 117 Q112 137 92 137" fill="none" stroke="#ffc62c" stroke-width="13" stroke-linecap="round"/><ellipse cx="89" cy="138" rx="13" ry="8" fill="#159ce9"/></g>
+          <path d="M24 106 H93 L119 153 H48Z" fill="#526b8b"/><path d="M48 153 H151 L143 161 H48Z" fill="#a3b8cc"/>
+          <g stroke="none"><path d="M63 119 h12 q6 0 6 6 v6 H67 v-4 H57 v-3 q0-5 6-5" fill="#1689ee"/><path d="M81 139 H69 q-6 0-6-6 v-5 h14 v4 h10 v2 q0 5-6 5" fill="#ffda35"/></g>
+        </g>
+        <g class="spark" fill="#ffda48"><text x="235" y="45" font-size="30">✦</text><text x="80" y="25" font-size="22">✧</text></g>
+      </svg>
+    </div>
+    <div class="viz">
+      <div class="viz-title" id="vizTitle">Пам'ять комп'ютера</div>
+      <div id="legend" class="legend"></div>
+      <div class="cells" id="cells"></div>
+      <div id="answerStatus" aria-live="polite"></div>
+      <div class="quiz" id="quiz"></div>
+    </div>
+  </div>
+
+  <div id="experiment" hidden><div class="fields"><label>Відвідувачі (n)<input id="field0" type="number" required min="0" max="40" step="1" value="10"></label><button id="tryRun">▶ Запустити</button></div><div id="inputError" role="status"></div></div><div id="note"></div><div id="correction" role="note" hidden></div>
+  <div class="track"><div class="progress" id="progress"></div></div>
+  <div class="controls">
+    <button id="sound" aria-pressed="true">🔊 Звук</button>
+    <button id="prev" aria-label="Попередня сцена">←</button>
+    <button id="play">⏸ Пауза</button>
+    <button id="next" aria-label="Наступна сцена">→</button>
+    <button id="restart">↻ Спочатку</button>
+  </div>
+  <footer>Python з нуля • Навчайся, експериментуй, перевіряй!</footer>
+</main>
+<script>
+
+const $=id=>document.getElementById(id);
+let audio=null,sound=true;function unlock(){if(!sound)return;try{if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state!=='running')audio.resume().catch(()=>{});}catch(e){}}function keySound(){if(!sound)return;unlock();if(!audio||audio.state!=='running')return;const t=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.setValueAtTime(1350,t);o.frequency.exponentialRampToValueAtTime(420,t+.045);g.gain.setValueAtTime(.325,t);g.gain.exponentialRampToValueAtTime(.001,t+.075);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.08)}function resultSound(){if(!sound)return;unlock();if(!audio||audio.state!=='running')return;const t=audio.currentTime;[660,880].forEach((f,j)=>{const a=t+j*.105,o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,a);g.gain.exponentialRampToValueAtTime(.22,a+.012);g.gain.exponentialRampToValueAtTime(.001,a+.19);o.connect(g);g.connect(audio.destination);o.start(a);o.stop(a+.2)})}document.addEventListener('pointerdown',unlock,true);document.addEventListener('keydown',unlock,true);$('sound').textContent='🔊 Звук';$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'🔊 Звук':'🔇 Звук';$('sound').setAttribute('aria-pressed',String(sound));if(sound){unlock();keySound()}};unlock();
+const D={"slug": "kino", "title": "Квитки в кінотеатрі", "icon": "🎬", "condition": "Один квиток коштує 120 грн. За кожні чотири квитки один із них безкоштовний. Введи кількість відвідувачів і визнач суму до сплати.", "fields": [{"n": "n", "l": "Відвідувачі", "p": "Кількість відвідувачів: ", "d": 10, "q": 13, "lo": 0, "hi": 40, "step": 1}], "calc": [["g = n // 4", "g", "Math.floor(n/4)", "Ціла частина від ділення на 4 — кількість безкоштовних квитків."], ["p = n - g", "p", "n-g", "Від загальної кількості віднімаємо безкоштовні квитки."], ["s = p * 120", "s", "p*120", "Кожен платний квиток коштує 120 грн."]], "prints": [["print(f\"Сума до сплати: {s} грн\")", "`Сума до сплати: ${s} грн`"]], "idea": "У кожній четвірці три квитки платні, один — безкоштовний. Решту квитків оплачуємо повністю.", "formula": "s = (n - g) * 120", "kind": "cinema", "correction": "", "valid": "true", "extra": ""};
+const CALC=[({n,g,p,s})=>(Math.floor(n/4)),({n,g,p,s})=>(n-g),({n,g,p,s})=>(p*120)];
+const PRINT=[({n,g,p,s})=>(`Сума до сплати: ${s} грн`)];
+const VALID=()=>true;
+function schedule(ms){clearTimeout(timer);if(playing)timer=setTimeout(tick,ms)}
+function stage(state){$('stage').className='stage '+state+(playing?'':' paused')}
+function add(fn,ms=300){actions.push({fn,ms})}
+function tick(){if(cursor>=actions.length){finished=true;stage('happy');if(idx<5&&playing)scheduleNext();return}const a=actions[cursor++];a.fn();schedule(a.ms)}
+function scheduleNext(){clearTimeout(timer);if(playing)timer=setTimeout(()=>load(idx+1),3800)}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function syntax(s){let out='',last=0;const re=/("(?:\\.|[^"\\\n])*"?|#[^\n]*|\b\d+(?:\.\d+)?\b|\b(?:print|input|int|float)\b)/g;for(const a of s.matchAll(re)){out+=esc(s.slice(last,a.index));out+=`<span class="${a[0][0]==='"'?'str':/^\d/.test(a[0])?'num':'fn'}">${esc(a[0])}</span>`;last=a.index+a[0].length}return out+esc(s.slice(last))}
+function paint(text,active=-1,caret=false){$('code').innerHTML=text.split('\n').map((l,i)=>`<span class="line${i===active?' active':''}">${syntax(l)}${caret&&i===text.split('\n').length-1?'<span class="cursor"> </span>':''}</span>`).join('')}
+function type(text){for(let k=1;k<=text.length;k++)add(()=>{paint(text.slice(0,k),-1,true);keySound()},36);add(()=>paint(text),450)}
+function out(text,beep=false){$('output').textContent=text;if(beep)resultSound()}
+const names=['Умова задачі','Вхідні дані','Ідея розв’язання','Код програми','Покрокове виконання','Експериментуй!','Перевір себе'];
+let idx=0,playing=true,timer=null,actions=[],cursor=0,finished=false,quizDone=false;
+const fmt=v=>Number.isInteger(v)?String(v):String(Number(v.toPrecision(12)));
+const program=[...D.fields.map(f=>`${f.n} = ${f.step===1?'int':'float'}(input(${JSON.stringify(f.p)}))`),...D.calc.map(c=>c[0]),...D.prints.map(p=>p[0])];
+const defaults=D.fields.map(f=>f.d), quizValues=D.fields.map(f=>f.q);
+function evaluate(v){const env={};D.fields.forEach((f,j)=>env[f.n]=v[j]);let states=[{...env}];for(let j=0;j<D.calc.length;j++){env[D.calc[j][1]]=CALC[j](env);states.push({...env})}return {env,states,outputs:PRINT.map(f=>f(env))}}
+function render(v,progress=0,known=0,computed=0){let {env,states}=evaluate(v), e=env;let h='';const card=(l,val,cl='')=>`<div class="mem ${cl}">${esc(l)}<b>${esc(val)}</b></div>`;const math=t=>`<div class="mathline">${esc(t)}</div>`;const line=(l,val,max,color)=>`<div class="vizrow"><span>${esc(l)}</span><b>${esc(val)}</b></div><div class="meter"><i style="width:${Math.min(100,Math.max(0,max))}%;background:${color}"></i></div>`;
+const reveal=(j,max)=>progress>= (j+1)/max;const item=(v)=>`<span class="apple">${v}</span>`;
+
+const groups=(total,cap,icon,mode)=>{let k=Math.ceil(total/cap),shown=Math.floor(progress*total+1e-8);return `<div class="pupils">${Array.from({length:k},(_,j)=>{let need=Math.min(cap,total-j*cap),count=Math.max(0,Math.min(need,shown-j*cap));return `<div class="pupil"><div class="pupil-title">${mode} ${j+1}<b>${count}/${cap}</b></div><div class="fruit">${Array.from({length:cap},(_,t)=>`<span class="apple" style="opacity:${t<count?1:.22};${D.kind==='cinema'&&need===4&&t===3&&t<count?'color:#79dba0;background:#195435;border-radius:4px':''}">${D.kind==='cinema'&&need===4&&t===3&&t<count?'🎁':icon}</span>`).join('')}</div></div>`}).join('')}</div>`};
+if(D.kind==='carousel'){let shown=Math.floor(progress*e.n+1e-8);h=`<div class="basket"><div class="basket-title">🎠 Катання <b>${shown}/${e.n}</b></div></div>`+groups(e.n,3,'🎟️','Група')+(progress>=1?math(`${e.a} × 100 + ${e.r} × 40 = ${e.s} грн`):'');if(progress>=1)h+=`<div class="memory">${card('Абонементи',e.a)}${card('Окремі квитки',e.r)}</div>`}
+else if(D.kind==='parking'){let all=Math.ceil(e.m/60),elapsed=Math.round(progress*e.m),fee=elapsed?30+(Math.ceil(elapsed/60)-1)*20:0;h=`<div class="basket"><div class="basket-title">🚗 Стоянка <b>${elapsed}/${e.m} хв</b></div></div>`+Array.from({length:all},(_,j)=>line(`${j+1}-а година · ${j?20:30} грн`,Math.min(60,Math.max(0,elapsed-j*60))+' хв',Math.min(60,Math.max(0,elapsed-j*60))/60*100,j?'#60bdfb':'#ffce64')).join('')+math('Нараховано: '+fee+' грн')+(progress>=1?math(`Усі години: ${all}; додаткові: ${all-1}`):'')}
+else if(D.kind==='pizza'||D.kind==='pencils'){let total=D.kind==='pizza'?e.s:e.all_pencils,cap=D.kind==='pizza'?8:10,qty=D.kind==='pizza'?e.p:e.k;h=`<div class="basket"><div class="basket-title">${D.icon} Потрібно: <b>${total} шт.</b></div></div>`+groups(total,cap,D.kind==='pizza'?'🍕':'✏️',D.kind==='pizza'?'Піца':'Коробка')+(progress>=1?math(`${qty} × ${cap} = ${qty*cap}; запас: ${qty*cap-total}`):'')}
+else if(D.kind==='cinema'){h=groups(e.n,4,'🎟️','Група')+(progress>=1?`<div class="memory">${card('🎁 Безкоштовні',e.g)}${card('Платні',e.p)}</div>`+math(`${e.p} × 120 = ${e.s} грн`):'')}
+if(known||computed)h+=`<div class="memory">${D.fields.slice(0,known).map((f,j)=>card(f.n,fmt(v[j]))).join('')}${D.calc.slice(0,computed).map(c=>card(c[1],fmt(e[c[1]]),'active')).join('')}</div>`;$('cells').innerHTML=h;}
+function consoleText(v,n=v.length){return D.fields.slice(0,n).map((f,j)=>f.p+fmt(v[j])).join('\n')}
+function reset(){clearTimeout(timer);actions=[];cursor=0;finished=false;quizDone=false;$('experiment').hidden=true;$('inputError').textContent='';$('quiz').style.display='none';$('quiz').replaceChildren();$('answerStatus').textContent='';$('topic').textContent=`${idx+1}. ${names[idx]}`;$('count').textContent=`ПРИКЛАД • ${idx+1}/7`;$('progress').style.width=`${(idx+1)/7*100}%`;$('steps').querySelectorAll('button').forEach((b,i)=>{b.classList.toggle('current',i===idx);if(i===idx)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});$('vizTitle').textContent=D.title;$('outputLabel').textContent='ПОЯСНЕННЯ';$('correction').hidden=!(D.correction||D.extra)||idx!==0;$('correction').textContent=[D.correction,D.extra].filter(Boolean).join(' ');paint('');out('');stage('typing');render(defaults);}
+function animate(v,known,computed){for(let p=1;p<=12;p++)add(()=>render(v,p/12,known,p===12?computed:0),135)}
+function enter(v){D.fields.forEach((f,j)=>{add(()=>{paint(program.join('\n'),j);out((j?consoleText(v,j)+'\n':'')+f.p)},350);const value=fmt(v[j]);for(let k=1;k<=value.length;k++)add(()=>{keySound();out((j?consoleText(v,j)+'\n':'')+f.p+value.slice(0,k))},95);add(()=>render(v,0,j+1),350)})}
+function execute(v){const result=evaluate(v);enter(v);D.calc.forEach((c,j)=>{add(()=>{paint(program.join('\n'),D.fields.length+j);$('note').textContent=c[3]},450);if(j===0)animate(v,v.length,j+1);else add(()=>render(v,1,v.length,j+1),550)});D.prints.forEach((p,j)=>add(()=>{paint(program.join('\n'),D.fields.length+D.calc.length+j);out(consoleText(v)+'\n'+result.outputs.slice(0,j+1).join('\n'),true)},650));add(()=>stage('happy'),500)}
+function load(k){idx=(k+7)%7;reset();let v=defaults;switch(idx){case 0:paint('# '+D.title);out(D.condition);$('note').textContent='Розглянь умову, потім переходь до вхідних даних.';add(()=>stage('happy'),3500);break;case 1:$('note').textContent='input() читає дані; int() або float() перетворює введене на число.';type(program.slice(0,v.length).join('\n'));D.fields.forEach((f,j)=>{add(()=>out((j?consoleText(v,j)+'\n':'')+f.p),400);add(()=>{keySound();out(consoleText(v,j+1));render(v,0,j+1)},650)});break;case 2:$('note').textContent=D.idea;type(program.slice(v.length,v.length+D.calc.length).join('\n'));animate(v,v.length,D.calc.length);add(()=>out(D.formula+'\n'+evaluate(v).outputs.join('\n'),true),700);break;case 3:$('note').textContent='Вводимо дані, виконуємо обчислення, виводимо результат.';type(program.join('\n'));add(()=>{out('Код готовий до виконання.',true);render(v,0,v.length)},700);break;case 4:$('outputLabel').textContent='КОНСОЛЬ';$('note').textContent='Стеж за підсвіченим рядком коду та змінами значень.';paint(program.join('\n'));execute(v);break;case 5:$('experiment').hidden=false;$('note').textContent='Введи власні дані в дозволених межах та натисни RUN. Повторюй експеримент скільки завгодно.';$('outputLabel').textContent='КОНСОЛЬ';paint(program.join('\n'));out('Введи дані та запусти програму.');stage('idle');D.fields.forEach((f,j)=>{$('field'+j).value=f.d});return;case 6:v=quizValues;$('cells').innerHTML='<div class="memory">'+D.fields.map((f,j)=>'<div class="mem">'+esc(f.n)+'<b>'+esc(fmt(v[j]))+'</b></div>').join('')+'</div>';paint(program.slice(v.length).join('\n'));out('Дані: '+D.fields.map((f,j)=>f.n+' = '+fmt(v[j])).join(', ')+'\nЯким буде результат?');$('note').textContent='Обери правильну відповідь.';showQuiz(v);stage('idle');return;}if(playing)schedule(50)}
+function experiment(){if(idx!==5)return;const fields=D.fields.map((f,j)=>$('field'+j));if(fields.some(f=>!f.checkValidity()||f.value==='')){$('inputError').textContent='Перевір межі та формат усіх чисел.';return}let v=fields.map(f=>Number(f.value));let env=Object.fromEntries(D.fields.map((f,j)=>[f.n,v[j]]));if(!VALID(env)){$('inputError').textContent=D.kind==='scale'?'Цукерки мають важити не менше за дівчаток.':D.kind==='time'?'Сума витрачених хвилин не може перевищувати 120.':'Для цілого задуманого числа n має бути непарним.';return}clearTimeout(timer);$('inputError').textContent='';actions=[];cursor=0;finished=false;playing=true;$('play').textContent='⏸ Пауза';stage('typing');render(v);execute(v);schedule(50)}
+function showQuiz(v){let result=evaluate(v), keys=D.kind==='snakes'?['L_m','L_cm']:[D.calc.at(-1)[1]], vals=keys.map(k=>result.env[k]);let right=vals.map(fmt).join(' і '), alternatives=[right,...[1,2,3].map(d=>vals.map((x,j)=>fmt(x+d*(j+1))).join(' і '))];let correctIndex=D.title.length%4;let options=alternatives.slice(1);options.splice(correctIndex,0,right);$('quiz').style.display='grid';options.forEach((value,j)=>{let b=document.createElement('button');b.textContent=value;b.onclick=()=>{if(quizDone)return;quizDone=true;[...$('quiz').children].forEach((x,k)=>{x.disabled=true;if(k===correctIndex)x.classList.add('correct');else if(x===b)x.classList.add('wrong')});$('answerStatus').textContent=j===correctIndex?'✅ Правильно!':'Правильна відповідь: '+right;render(v,1,v.length,D.calc.length);out(result.outputs.join('\n'),true);$('note').textContent=D.idea;stage('happy')};$('quiz').append(b)})}
+for(let j=0;j<7;j++){let b=document.createElement('button');b.textContent=j+1;b.title=names[j];b.setAttribute('aria-label',names[j]);b.onclick=()=>load(j);$('steps').append(b)}
+$('run').onclick=()=>{if(idx===5)experiment();else if(idx===6)load(6);else{playing=true;$('play').textContent='⏸ Пауза';load(idx)}};$('tryRun').onclick=experiment;D.fields.forEach((f,j)=>{let el=$('field'+j);el.addEventListener('input',keySound);el.addEventListener('keydown',e=>{if(e.key==='Enter')experiment()})});$('prev').onclick=()=>load(idx-1);$('next').onclick=()=>load(idx+1);$('restart').onclick=()=>{playing=true;$('play').textContent='⏸ Пауза';load(0)};$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Пауза':'▶ Відтворити';$('stage').classList.toggle('paused',!playing);if(!playing)clearTimeout(timer);else if(finished&&idx<5)scheduleNext();else if(cursor<actions.length)schedule(50)};load(0);
+</script></body></html>
